@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Автоматическая установка громкости на максимум">
+    <title>Авто-Макс Громкость 🔊</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #ff9e00;
+            --dark: #212529;
+            --light: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(45deg, #4361ee, #4cc9f0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .main-content {
+            display: grid;
+            gap: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #4cc9f0;
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--warning);
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.active {
+            background: var(--success);
+            animation: pulse-fast 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes pulse-fast {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 5px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #4361ee, #3a0ca3);
+            color: white;
+        }
+.btn-primary:hover {
+            background: linear-gradient(45deg, #3a0ca3, #4361ee);
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #4cc9f0, #4895ef);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(45deg, #4895ef, #4cc9f0);
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(76, 201, 240, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #f72585, #b5179e);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(45deg, #b5179e, #f72585);
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(247, 37, 133, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .file-upload-area {
+            border: 3px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--success);
+            background: rgba(76, 201, 240, 0.1);
+            transform: scale(1.02);
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .audio-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .volume-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+            color: #4cc9f0;
+        }
+
+        .hidden-audio {
+            display: none;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+        }
+
+        .browser-tips {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tip {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .tip-title {
+            color: var(--warning);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+/* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+            
+            .audio-controls {
+                flex-direction: column;
+            }
+            
+            .audio-controls .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <span>🔊</span>
+                АВТО-МАКС ГРОМКОСТЬ
+                <span>🔊</span>
+            </h1>
+            <p class="tagline">Автоматическая установка максимальной громкости + загрузка аудио</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Карточка 1: Автоматическая установка громкости -->
+            <div class="card">
+                <div class="card-title">
+                    <span>⚡</span>
+                    АВТОМАТИЧЕСКАЯ УСТАНОВКА ГРОМКОСТИ
+                </div>
+                
+                <div class="status-container">
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    <span id="statusText">Готов к автоматической установке громкости...</span>
+                </div>
+
+                <div class="instructions">
+                    <strong>Внимание:</strong> Современные браузеры блокируют автоматическое изменение громкости без действий пользователя. 
+                    Для работы требуется ОДНОКРАТНОЕ нажатие на кнопку ниже.
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="btn btn-primary" id="activateBtn" onclick="activateMaxVolume()">
+                        <span>🚀</span>
+                        АКТИВИРОВАТЬ МАКСИМАЛЬНУЮ ГРОМКОСТЬ
+                    </button>
+                    
+                    <button class="btn btn-success" onclick="playTestSound()">
+                        <span>▶️</span>
+                        ТЕСТОВЫЙ ЗВУК
+                    </button>
+                </div>
+
+                <div class="volume-control">
+                    <span>🔈</span>
+                    <input type="range" 
+                           class="volume-slider" 
+                           id="volumeSlider" 
+                           min="0" 
+                           max="100" 
+                           value="50"
+                           oninput="updateVolume(this.value)">
+                    <span>🔊</span>
+                    <div class="volume-display" id="volumeDisplay">50%</div>
+                </div>
+            </div>
+
+            <!-- Карточка 2: Загрузка пользовательского аудио -->
+            <div class="card">
+                <div class="card-title">
+                    <span>🎵</span>
+                    ЗАГРУЗИТЕ СВОЙ АУДИОФАЙЛ
+                </div>
+
+                <div class="instructions">
+                    Поддерживаемые форматы: MP3, WAV, OGG, AAC, M4A. Максимальный размер: 50 МБ
+                </div>
+<div class="file-upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <div style="font-size: 4rem; margin-bottom: 15px;">📁</div>
+                    <h3>Перетащите аудиофайл сюда</h3>
+                    <p>или нажмите для выбора файла</p>
+                    
+                    <input type="file" 
+                           id="fileInput" 
+                           accept="audio/*" 
+                           style="display: none;" 
+                           onchange="handleFileSelect(event)">
+                </div>
+
+                <div id="fileInfo" class="file-info" style="display: none;"></div>
+
+                <div class="audio-controls" id="audioControls" style="display: none;">
+                    <button class="btn btn-success" id="playBtn" onclick="playUserAudio()">
+                        <span>▶️</span>
+                        ВОСПРОИЗВЕСТИ
+                    </button>
+                    <button class="btn btn-danger" id="stopBtn" onclick="stopUserAudio()">
+                        <span>⏹️</span>
+                        ОСТАНОВИТЬ
+                    </button>
+                    <button class="btn btn-primary" id="maxVolumeBtn" onclick="setUserAudioMaxVolume()">
+                        <span>🔊</span>
+                        МАКС. ГРОМКОСТЬ
+                    </button>
+                </div>
+            </div>
+
+            <!-- Карточка 3: Советы по браузерам -->
+            <div class="card">
+                <div class="card-title">
+                    <span>💡</span>
+                    СОВЕТЫ ДЛЯ ЛУЧШЕЙ РАБОТЫ
+                </div>
+
+                <div class="browser-tips">
+                    <div class="tip">
+                        <div class="tip-title">Chrome / Edge / Brave</div>
+                        <p>Разрешите автовоспроизведение в настройках сайта</p>
+                    </div>
+                    <div class="tip">
+                        <div class="tip-title">Safari (iPhone/iPad)</div>
+                        <p>Включите "Медиаавтовоспроизведение" в настройках Safari</p>
+                    </div>
+                    <div class="tip">
+                        <div class="tip-title">Firefox</div>
+                        <p>Отключите блокировку автовоспроизведения в about:config</p>
+                    </div>
+                    <div class="tip">
+                        <div class="tip-title">Android Браузеры</div>
+                        <p>Уберите физический ограничитель громкости на устройстве</p>
+                    </div>
+                </div>
+
+                <div class="instructions" style="margin-top: 20px;">
+                    <strong>Важно:</strong> Для NFC метки сохраните эту страницу как приложение (PWA) или используйте прямую ссылку.
+                    При первом использовании может потребоваться нажать "Разрешить" для доступа к звуку.
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Сайт для автоматической установки громкости через NFC метки | v1.0</p>
+            <p>⚠️ Используйте ответственно, не подвергайте слух опасности</p>
+        </footer>
+    </div>
+
+    <!-- Скрытые аудио элементы -->
+    <audio id="systemAudio" class="hidden-audio" preload="auto">
+        <source src="https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="userAudio" class="hidden-audio"></audio>
+
+    <!-- Тестовый звук -->
+    <audio id="testSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Основные элементы
+        const systemAudio = document.getElementById('systemAudio');
+        const userAudio = document.getElementById('userAudio');
+const testSound = document.getElementById('testSound');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeDisplay = document.getElementById('volumeDisplay');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        const fileInfo = document.getElementById('fileInfo');
+        const audioControls = document.getElementById('audioControls');
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        let userFile = null;
+        let audioContext = null;
+        let isActivated = false;
+        let maxVolumeAttempted = false;
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            // Настройка начальной громкости
+            systemAudio.volume = 0.5;
+            userAudio.volume = 0.5;
+            testSound.volume = 0.5;
+            
+            // Настройка drag & drop
+            setupDragAndDrop();
+            
+            // Попытка автоматической активации через 1 секунду
+            setTimeout(attemptAutoActivation, 1000);
+            
+            // Обновление отображения громкости
+            updateVolumeDisplay();
+        });
+
+        // Настройка drag & drop
+        function setupDragAndDrop() {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.add('dragover');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.remove('dragover');
+                }, false);
+            });
+
+            dropZone.addEventListener('drop', handleDrop, false);
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                handleFileSelect({ target: { files } });
+            }
+        }
+
+        // Обработка выбора файла
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('audio/')) {
+                updateStatus('❌ Выберите аудиофайл!', 'error');
+                return;
+            }
+
+            userFile = file;
+            
+            // Отображение информации о файле
+            fileInfo.innerHTML = 
+                <strong>📁 Файл:</strong> ${file.name}<br>
+                <strong>📊 Размер:</strong> ${(file.size / 1024 / 1024).toFixed(2)} МБ<br>
+                <strong>🎵 Тип:</strong> ${file.type || 'Не определен'}
+            ;
+            fileInfo.style.display = 'block';
+            
+            // Создание URL для воспроизведения
+            const audioURL = URL
+            }
